@@ -30,7 +30,7 @@ ifeq ($(SIM_TOOL),iverilog)
 SIM_OPTIONS   := -o vvp.exec -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -I "${VSRC_DIR}/perips/apb_i2c/" -D DISABLE_SV_ASSERTION=1 -g2005-sv
 endif
 ifeq ($(SIM_TOOL),verilator)
-SIM_OPTIONS   := -sv --main  --cc --exe --top tb_top -Wall -Wno-fatal -I"${VSRC_DIR}/core/" -I"${VSRC_DIR}/perips/" -I"${VSRC_DIR}/perips/apb_i2c/" --timing 
+SIM_OPTIONS   := ${VTB_DIR}/jtagdpi.c ${VTB_DIR}/jtagdpi.sv ${VTB_DIR}/tcp_server.c --trace -sv --main  --cc --exe --top tb_top -Wall -Wno-fatal -I"${VSRC_DIR}/core/" -I"${VSRC_DIR}/perips/" -I"${VSRC_DIR}/perips/apb_i2c/" --timing 
 endif
 
 
@@ -122,7 +122,7 @@ endif
 
 all: run
 
-compile.flg: ${RTL_V_FILES} ${TB_V_FILES}
+compile.flg: ${RTL_V_FILES} ${TB_V_FILES} ${VTB_DIR}/jtagdpi.c ${VTB_DIR}/jtagdpi.sv ${VTB_DIR}/tcp_server.c
 	@-rm -rf compile.flg
 # 	sed -i '1i\`define ${SIM_TOOL}\'  ${VTB_DIR}/tb_top.v
 	${SIM_TOOL}   ${RTL_V_FILES} ${TB_V_FILES} ${SIM_OPTIONS};
@@ -145,6 +145,7 @@ ifeq ($(SIM_TOOL),verilator)
 	cp ${TESTCASE}.verilog ${TEST_RUNDIR}/.verilog
 endif
 	cd ${TEST_RUNDIR}; ${SIM_EXEC} +DUMPWAVE=${DUMPWAVE} +TESTCASE=${TESTCASE} +SIM_TOOL=${SIM_TOOL} 2>&1 | tee ${TESTNAME}.log; cd ${RUN_DIR}; 
+
 
 .PHONY: run clean all 
 
