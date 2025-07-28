@@ -29,6 +29,9 @@ endif
 ifeq ($(SIM_TOOL),iverilog)
 SIM_OPTIONS   := -o vvp.exec -I "${VSRC_DIR}/core/" -I "${VSRC_DIR}/perips/" -I "${VSRC_DIR}/perips/apb_i2c/" -D DISABLE_SV_ASSERTION=1 -g2005-sv
 endif
+ifeq ($(SIM_TOOL),verilator)
+SIM_OPTIONS   := -sv --main  --cc --exe --top tb_top -Wall -Wno-fatal -I"${VSRC_DIR}/core/" -I"${VSRC_DIR}/perips/" -I"${VSRC_DIR}/perips/apb_i2c/" --timing 
+endif
 
 
 
@@ -58,6 +61,9 @@ endif
 ifeq ($(SIM_TOOL),iverilog)
 SIM_EXEC      := vvp ${RUN_DIR}/vvp.exec -lxt2	
 endif
+ifeq ($(SIM_TOOL),verilator)
+SIM_EXEC      := ${RUN_DIR}/obj_dir/Vtb_top
+endif
 
 
 #To-ADD: to add the waveform tool
@@ -65,6 +71,9 @@ ifeq ($(SIM_TOOL),vcs)
 WAV_TOOL := verdi
 endif
 ifeq ($(SIM_TOOL),iverilog) 
+WAV_TOOL := gtkwave
+endif
+ifeq ($(SIM_TOOL),verilator) 
 WAV_TOOL := gtkwave
 endif
 
@@ -115,21 +124,27 @@ all: run
 
 compile.flg: ${RTL_V_FILES} ${TB_V_FILES}
 	@-rm -rf compile.flg
-	sed -i '1i\`define ${SIM_TOOL}\'  ${VTB_DIR}/tb_top.v
-	${SIM_TOOL} ${SIM_OPTIONS}  ${RTL_V_FILES} ${TB_V_FILES} ;
+# 	sed -i '1i\`define ${SIM_TOOL}\'  ${VTB_DIR}/tb_top.v
+	${SIM_TOOL}   ${RTL_V_FILES} ${TB_V_FILES} ${SIM_OPTIONS};
+ifeq ($(SIM_TOOL),verilator)
+	make -C obj_dir -f Vtb_top.mk
+endif
 	touch compile.flg
 
 compile: compile.flg 
 
 wave: 
-	gvim -p ${TESTCASE}.spike.log ${TESTCASE}.dump &
+# 	gvim -p ${TESTCASE}.spike.log ${TESTCASE}.dump &
 	${WAV_TOOL} ${WAV_OPTIONS} ${WAV_INC} ${WAV_RTL} ${WAV_FILE}  & 
 
 run: compile
 	rm -rf ${TEST_RUNDIR}
 	mkdir ${TEST_RUNDIR}
+# 	because verilator $readmemh bug
+ifeq ($(SIM_TOOL),verilator)
+	cp ${TESTCASE}.verilog ${TEST_RUNDIR}/.verilog
+endif
 	cd ${TEST_RUNDIR}; ${SIM_EXEC} +DUMPWAVE=${DUMPWAVE} +TESTCASE=${TESTCASE} +SIM_TOOL=${SIM_TOOL} 2>&1 | tee ${TESTNAME}.log; cd ${RUN_DIR}; 
-
 
 .PHONY: run clean all 
 

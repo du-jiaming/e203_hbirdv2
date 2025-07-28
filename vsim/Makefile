@@ -4,7 +4,8 @@ RUN_DIR      := ${PWD}/run
 TESTNAME     := rv32ui-p-add 
 TESTCASE     := ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/${TESTNAME}
 
-SIM          := iverilog 
+# SIM          := iverilog 
+SIM          := verilator 
 DUMPWAVE     := 1
 
 CORE        := e203
@@ -18,7 +19,7 @@ all: run_test
 
 install: 
 	mkdir -p ${SIM_DIR}/install/tb
-	cp ${SIM_DIR}/../tb/*.v ${SIM_DIR}/install/tb -rf
+	cp ${SIM_DIR}/../tb/* ${SIM_DIR}/install/tb -rf
 	cp ${SIM_DIR}/../rtl/${core_name} ${SIM_DIR}/install/rtl -rf
 
 ${RUN_DIR}:
