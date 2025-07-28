@@ -174,10 +174,11 @@ module tb_top();
     end
 
     pc_write_to_host_flag <=0;
-    clk   <=0;
-    lfextclk   <=0;
-    rst_n <=0;
-    #120 rst_n <=1;
+    clk   =0;
+    lfextclk   =0;
+    rst_n =0;
+    #120 rst_n =1;
+
 
     @(pc_write_to_host_cnt == 32'd8) #10 rst_n <=1;
 `ifdef ENABLE_TB_FORCE
@@ -217,8 +218,8 @@ module tb_top();
         $display("~~~~~~~~~~#       #    #     #    ######~~~~~~~~~~~~~~~~");
         $display("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     end
-    #10
-     $finish;
+   // #10
+   //  $finish;
   end
 
   initial begin
@@ -295,14 +296,26 @@ module tb_top();
 
 
 
-  wire jtag_TDI = 1'b0;
-  wire jtag_TDO;
-  wire jtag_TCK = 1'b0;
-  wire jtag_TMS = 1'b0;
-  wire jtag_TRST = 1'b0;
+ // wire jtag_TDI = 1'b0;
+ // wire jtag_TDO;
+ // wire jtag_TCK = 1'b0;
+ // wire jtag_TMS = 1'b0;
+ // wire jtag_TRST = 1'b0;
 
   wire jtag_DRV_TDO = 1'b0;
 
+   jtagdpi u_jtagdpi (
+     .clk_i       (clk),
+     .rst_ni      (rst_n),
+     .active      (1'b1),
+
+     .jtag_tck    (jtag_TCK),
+     .jtag_tms    (jtag_TMS),
+     .jtag_tdi    (jtag_TDI),
+     .jtag_tdo    (jtag_TDO),
+     .jtag_trst_n (cio_jtag_trst_n),
+     .jtag_srst_n (cio_jtag_srst_n)
+   );
 
 e203_soc_top u_e203_soc_top(
    
